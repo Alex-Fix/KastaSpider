@@ -1,3 +1,4 @@
+using Core.AutoMapperProfiles;
 using Core.Configurations;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -24,8 +25,8 @@ namespace KastaSpider
             string appRootPath = builder.GetContext().ApplicationRootPath;
 
             builder.ConfigurationBuilder
-                .AddJsonFile(Path.Combine(appRootPath, "appsettings.json"), optional: false, reloadOnChange: true)
-                .AddJsonFile(Path.Combine(appRootPath, $"appsettings.{envName}.json"), optional: true, reloadOnChange: true);
+                .AddJsonFile(Path.Combine(appRootPath, "Configuration", "appsettings.json"), optional: false, reloadOnChange: true)
+                .AddJsonFile(Path.Combine(appRootPath, "Configuration", $"appsettings.{envName}.json"), optional: true, reloadOnChange: true);
         }
 
         public override void Configure(IFunctionsHostBuilder builder)
@@ -39,17 +40,28 @@ namespace KastaSpider
             services.Configure<KastaSpiderConfiguration>(configuration.GetSection(nameof(KastaSpiderConfiguration)));
 
             // databases
-            services.AddSingleton<IMongoClient>(p => new MongoClient(p.GetRequiredService<IOptions<MongoDBConfiguration>>().Value.ConnectionString));
-            services.AddScoped<IMongoDatabase>(p => p.GetRequiredService<IMongoClient>().GetDatabase(p.GetRequiredService<IOptions<MongoDBConfiguration>>().Value.DatabaseName));
+            services.AddSingleton<IMongoClient>(p => {
+                string connectionString = p.GetRequiredService<IOptions<MongoDBConfiguration>>().Value.ConnectionString;
+                return new MongoClient(connectionString);
+            });
+            services.AddScoped<IMongoDatabase>(p => {
+                string databaseName = p.GetRequiredService<IOptions<MongoDBConfiguration>>().Value.DatabaseName;
+                return p.GetRequiredService<IMongoClient>().GetDatabase(databaseName);
+            });
 
             // services
             services.AddScoped<ILogService, MongoLogService>();
             services.AddScoped<IKastaClient, KastaClient>();
             services.AddScoped<IQueueService, RabbitMQQueueService>();
+            services.AddScoped<IProductService, ProductService>();
 
             //workers
             services.AddScoped<IWorker<SitemapsFetcherWorker, object>, SitemapsFetcherWorker>();
             services.AddScoped<IWorker<ProductsFetcherWorker, IEnumerable<string>>, ProductsFetcherWorker>();
+            services.AddScoped<IWorker<ProductsParserWorker, IEnumerable<string>>, ProductsParserWorker>();
+
+            // automapper
+            services.AddAutoMapper(typeof(KastaToDomainProfile));
         }
     }
 }

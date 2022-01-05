@@ -11,13 +11,18 @@ namespace Services.Services.Implementations
 {
     public class RabbitMQQueueService : IQueueService
     {
+        #region Fields
         private readonly RabbitMQQueueConfiguration _rabbitMQQueueConfiguration;
+        #endregion
 
+        #region Constructor
         public RabbitMQQueueService(IOptions<RabbitMQQueueConfiguration> rabbitMQQueueConfiguration)
         {
             _rabbitMQQueueConfiguration = rabbitMQQueueConfiguration.Value;
         }
+        #endregion
 
+        #region Methods
         public void Insert<T>(string queueName, T entity)
         {
             if(string.IsNullOrEmpty(queueName))
@@ -32,8 +37,8 @@ namespace Services.Services.Implementations
                 Password = _rabbitMQQueueConfiguration.Password,
                 Port = _rabbitMQQueueConfiguration.Port
             };
-            using var connection = factory.CreateConnection();
-            using var channel = connection.CreateModel();
+            using IConnection connection = factory.CreateConnection();
+            using IModel channel = connection.CreateModel();
 
             channel.QueueDeclare(queue: queueName,
                                 durable: false,
@@ -65,8 +70,8 @@ namespace Services.Services.Implementations
                 Password = _rabbitMQQueueConfiguration.Password,
                 Port = _rabbitMQQueueConfiguration.Port
             };
-            using var connection = factory.CreateConnection();
-            using var channel = connection.CreateModel();
+            using IConnection connection = factory.CreateConnection();
+            using IModel channel = connection.CreateModel();
 
             channel.QueueDeclare(queue: queueName,
                                 durable: false,
@@ -81,5 +86,6 @@ namespace Services.Services.Implementations
                 channel.BasicPublish(exchange: string.Empty, routingKey: queueName, basicProperties: null, body: body);
             }
         }
+        #endregion
     }
 }

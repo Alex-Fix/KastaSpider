@@ -11,13 +11,18 @@ namespace Services.Services.Implementations
 {
     public class AzureQueueService : IQueueService
     {
+        #region Fields
         private readonly AzureQueueConfiguration _azureQueueConfiguration;
+        #endregion
 
+        #region Constructor
         public AzureQueueService(IOptions<AzureQueueConfiguration> azureQueueConfiguration)
         {
             _azureQueueConfiguration = azureQueueConfiguration.Value;
         }
+        #endregion
 
+        #region Methods
         public void Insert<T>(string queueName, T entity)
         {
             if (string.IsNullOrEmpty(queueName))
@@ -54,5 +59,6 @@ namespace Services.Services.Implementations
                 queueClient.SendMessage(base64);
             }
         }
+        #endregion
     }
 }

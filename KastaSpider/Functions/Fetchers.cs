@@ -11,15 +11,18 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace KastaSpider
+namespace KastaSpider.Functions
 {
-    public class Fetcher
+    public class Fetchers
     {
+        #region Fields
         private readonly ILogService _logService;
         private readonly IWorker<SitemapsFetcherWorker, object> _sitemapsFetcherWorker;
         private readonly IWorker<ProductsFetcherWorker, IEnumerable<string>> _productsFetcherWorker;
+        #endregion
 
-        public Fetcher(
+        #region Constructor
+        public Fetchers(
             ILogService logService,
             IWorker<SitemapsFetcherWorker, object> sitemapsFetcherWorker,
             IWorker<ProductsFetcherWorker, IEnumerable<string>> productsFetcherWorker)
@@ -28,7 +31,9 @@ namespace KastaSpider
             _sitemapsFetcherWorker = sitemapsFetcherWorker;
             _productsFetcherWorker = productsFetcherWorker;
         }
+        #endregion
 
+        #region Functions
         [FunctionName(nameof(SitemapsFetcher))]
         public async Task<IActionResult> SitemapsFetcher([HttpTrigger(AuthorizationLevel.Function, "GET")] HttpRequest request, ILogger consoleLogger)
         {
@@ -59,5 +64,6 @@ namespace KastaSpider
                 throw;
             }
         }
+        #endregion
     }
 }

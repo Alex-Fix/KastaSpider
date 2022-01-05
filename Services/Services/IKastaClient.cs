@@ -1,3 +1,4 @@
+using Core.Models.Kasta;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,5 +9,6 @@ namespace Services.Services
         Task<IList<string>> GetSitemapUrls();
         Task<IList<string>> GetProductSitemapUrls();
         Task<IList<string>> GetProductUrls(string productSitemapUrl);
+        Task<ProductModel> GetProduct(string productUrl);
     }
 }
